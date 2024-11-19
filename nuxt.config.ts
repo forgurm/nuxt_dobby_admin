@@ -7,9 +7,7 @@ export default defineNuxtConfig({
   plugins: [
     '~/plugins/crypto.ts'
   ],
-  nitro: {
-    moduleSideEffects: ['crypto-js'],
-  },
+  ssr: true,
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api'
