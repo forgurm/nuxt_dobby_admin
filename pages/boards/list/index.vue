@@ -31,6 +31,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+
 const boards = ref([
   { id: 1, name: '자유게시판', isActive: true, createdAt: '2024-03-20' },
   { id: 2, name: '공지사항', isActive: true, createdAt: '2024-03-20' },

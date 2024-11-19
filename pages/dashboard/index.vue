@@ -89,6 +89,11 @@ const counts = ref<CountsData>({
   active_client: 0,
 })
 
+interface SymbolData {
+  exchange_name: string;
+  symbol_name: string | null;
+}
+
 // 차트 생성 함수
 const createChart = (labels: string[], nullCounts: number[], totalCounts: number[]) => {
   if (!chartRef.value) return
@@ -144,13 +149,13 @@ const createChart = (labels: string[], nullCounts: number[], totalCounts: number
 const initializeChart = async () => {
   try {
     const response = await fetch('/api/symbols')
-    const data = await response.json()
-    const labels = [...new Set(data.map(item => item.exchange_name))]
+    const data = await response.json() as SymbolData[]
+    const labels = [...new Set(data.map((item: SymbolData) => item.exchange_name))]
     const nullCounts = labels.map(label => 
-      data.filter(item => item.exchange_name === label && (!item.symbol_name || item.symbol_name === '')).length
+      data.filter((item: SymbolData) => item.exchange_name === label && (!item.symbol_name || item.symbol_name === '')).length
     )
     const totalCounts = labels.map(label => 
-      data.filter(item => item.exchange_name === label).length
+      data.filter((item: SymbolData) => item.exchange_name === label).length
     )
 
     createChart(labels, nullCounts, totalCounts)
