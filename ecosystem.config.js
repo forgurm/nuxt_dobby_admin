@@ -11,6 +11,12 @@ module.exports = {
         NUXT_APP_BASE_URL: '/',  // 베이스 URL
         NITRO_HOST: '0.0.0.0',   // 호스트
         NITRO_PORT: 3000,        // 포트
+        DB_HOST: 'forgurm.iptime.org',
+        DB_USER: 'forgurm',
+        DB_PASSWORD: 'asdfqwer1!',
+        DB_NAME: 'tpsl',
+        DB_PORT: '3306',
+        DB_FONT: 'utf8mb4'
       },
     },
   ],
