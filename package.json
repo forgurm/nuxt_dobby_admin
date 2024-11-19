@@ -1,0 +1,33 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "NODE_NO_WARNINGS=1 nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@toast-ui/chart": "^4.6.1",
+    "@toast-ui/editor": "^3.2.2",
+    "@types/axios": "^0.9.36",
+    "axios": "^1.7.7",
+    "chart.js": "^4.4.6",
+    "mysql2": "^3.11.4",
+    "nuxt": "^3.14.159",
+    "vue": "latest",
+    "vue-router": "latest"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.12.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "vue-tsc": "^2.1.10"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "extends": "./.nuxt/tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "noEmit": true
+  }
+}
