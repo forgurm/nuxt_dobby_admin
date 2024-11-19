@@ -4,7 +4,7 @@ module.exports = {
       name: 'doby-admin',      // 애플리케이션 이름
       port: '3000',            // 포트 번호
       exec_mode: 'cluster',    // 실행 모드
-      instances: 'max',        // CPU 코어 수만큼 인스턴스 생성
+      instances: 2,            // 원하는 인스턴스 수로 수정 (예: 2개)
       script: '.output/server/index.mjs',  // 실행할 스크립트
       env: {
         NODE_ENV: 'production',
