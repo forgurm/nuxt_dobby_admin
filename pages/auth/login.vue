@@ -59,20 +59,24 @@ const handleLogin = async () => {
   try {
     const response = await $fetch('/api/auth/login', {
       method: 'POST',
-      body: { id: id.value, password: password.value },
+      body: { 
+        id: id.value, 
+        password: password.value 
+      }
     })
-    if (response.success && response.user) {
-      auth.value = true
-      userLevel.value = response.user.lv
+
+    if (response.success) {
       localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('userLevel', response.user.lv)
+      localStorage.setItem('userLevel', response.user?.lv?.toString() || '0')
+      auth.value = true
+      userLevel.value = response.user?.lv || 0
       await router.push('/dashboard')
     } else {
-      errorMessage.value = response.message || '아이디 또는 비밀번호가 올바르지 않습니다.'
+      errorMessage.value = response.message
     }
   } catch (error) {
     console.error('로그인 요청 오류:', error)
-    errorMessage.value = '서버 오류가 발생했습니다.'
+    errorMessage.value = '로그인 처리 중 오류가 발생했습니다.'
   }
 }
 </script>
