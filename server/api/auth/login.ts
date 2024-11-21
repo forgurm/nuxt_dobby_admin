@@ -1,28 +1,24 @@
-import { createConnection } from 'mysql2/promise';
-import { defineEventHandler, readBody } from 'h3';
+import { createPool } from 'mysql2/promise';
+import { defineEventHandler, readBody, createError } from 'h3';
 import type { RowDataPacket } from 'mysql2';
 
+const pool = createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+});
+
 export default defineEventHandler(async (event) => {
-  let connection;
   try {
     const { id, password } = await readBody(event);
 
-    // MySQL 연결 설정
-    connection = await createConnection({
-      host: 'forgurm.iptime.org',  // 직접 호스트 지정
-      port: 3306,
-      user: 'forgurm',
-      password: 'asdfqwer1!',
-      database: 'tpsl',
-      charset: 'utf8mb4'
-    });
-
     // 사용자 인증 쿼리
-    const [rows] = await connection.execute<RowDataPacket[]>(
-      'SELECT * FROM users WHERE emailid = ? AND password = ?',
-      [id, password]
-    );
+    const [rows] = await pool.query<RowDataPacket[]>(`
+      SELECT * FROM users WHERE emailid = ? AND password = ?
+    `, [id, password]);
 
+    // 쿼리 결과 처리
     if (rows.length > 0) {
       return { 
         success: true, 
@@ -40,14 +36,6 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error: any) {
     console.error('로그인 처리 오류:', error);
-    return { 
-      success: false, 
-      message: '서버 오류가 발생했습니다.',
-      error: error.message 
-    };
-  } finally {
-    if (connection) {
-      await connection.end();
-    }
+    throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' });
   }
 }); 

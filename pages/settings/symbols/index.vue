@@ -20,7 +20,6 @@
       
       <!-- 심볼 리스트 -->
       <div v-for="(exchange, index) in exchanges" :key="exchange.exchange_name" v-show="activeTab === index" class="mt-4">
-        <h2 class="text-xl font-semibold mb-4">{{ exchange.exchange_name }}</h2>
         <div v-for="symbol in exchange.symbols" :key="symbol.symbol_code" class="flex items-center space-x-4 mb-2">
           <input v-model="symbol.symbol_name" type="text" class="border p-2 rounded w-full" placeholder="심볼 이름 입력" />
           <span class="text-gray-700">{{ symbol.symbol_code }}</span>
@@ -32,7 +31,21 @@
   <script setup lang="ts">
   import { ref, onMounted } from 'vue'
   
-  const exchanges = ref([])
+  interface Symbol {
+    exchange_name: string;
+    symbol_code: string;
+    symbol_name: string;
+    original_name?: string;
+  }
+  
+  interface Exchange {
+    exchange_name: string;
+    total_count: number;
+    empty_count: number;
+    symbols: Symbol[];
+  }
+  
+  const exchanges = ref<Exchange[]>([])
   const activeTab = ref(0)
   
   onMounted(async () => {
@@ -41,28 +54,37 @@
   
   async function loadSymbols() {
     try {
-      const response = await fetch('/api/symbols')
-      const data = await response.json()
-      const grouped = data.reduce((acc, symbol) => {
-        let exchange = acc.find(e => e.exchange_name === symbol.exchange_name)
+      const response = await $fetch<{
+        success: boolean;
+        data: Symbol[];
+      }>('/api/setting/symbols/symbols');
+      
+      if (!response.success || !Array.isArray(response.data)) {
+        console.error('심볼 데이터를 가져오는데 실패했습니다:', response);
+        return;
+      }
+
+      const grouped = response.data.reduce<Exchange[]>((acc, symbol) => {
+        let exchange = acc.find(e => e.exchange_name === symbol.exchange_name);
         if (!exchange) {
           exchange = {
             exchange_name: symbol.exchange_name,
-            total_count: symbol.total_count,
-            empty_count: symbol.empty_count,
+            total_count: symbol.total_count || 0,
+            empty_count: symbol.empty_count || 0,
             symbols: []
-          }
-          acc.push(exchange)
+          };
+          acc.push(exchange);
         }
         exchange.symbols.push({
           ...symbol,
-          original_name: symbol.symbol_name // 원래 이름 저장
-        })
-        return acc
-      }, [])
-      exchanges.value = grouped
+          original_name: symbol.symbol_name
+        });
+        return acc;
+      }, []);
+      
+      exchanges.value = grouped;
     } catch (error) {
-      console.error('API 호출 오류:', error)
+      console.error('API 호출 오류:', error);
     }
   }
   
@@ -72,8 +94,8 @@
         for (const symbol of exchange.symbols) {
           const originalName = symbol.original_name || '';
           const symbolName = symbol.symbol_name || '';
-          if (symbolName.trim() !== '' && symbolName !== originalName) { // 변경된 심볼만 업데이트
-            await fetch('/api/symbols/update', {
+          if (symbolName.trim() !== '' && symbolName !== originalName) {
+            await fetch('/api/setting/symbols/update', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -85,7 +107,7 @@
           }
         }
       }
-      await loadSymbols() // 업데이트 후 데이터 다시 로드
+      await loadSymbols()
     } catch (error) {
       console.error('심볼 저장 오류:', error);
     }

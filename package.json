@@ -4,7 +4,7 @@
   "type": "commonjs",
   "scripts": {
     "build": "nuxt build",
-    "dev": "NODE_NO_WARNINGS=1 nuxt dev",
+    "dev": "set NODE_NO_WARNINGS=1 && nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
@@ -15,6 +15,7 @@
     "@types/axios": "^0.9.36",
     "axios": "^1.7.7",
     "chart.js": "^4.4.6",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "crypto-js": "^4.2.0",
     "mysql2": "^3.11.4",
     "nuxt": "^3.14.159",

@@ -18,13 +18,13 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="keyword in keywords" :key="keyword.keyword">
+          <tr v-for="keyword in keywords" :key="keyword.id">
             <td class="border px-4 py-2">
               <input type="checkbox" :checked="keyword.active === 1" @change="toggleActive(keyword)" />
             </td>
             <td class="border px-4 py-2">{{ keyword.keyword }}</td>
             <td class="border px-4 py-2">
-              <button @click="deleteKeyword(keyword.keyword)" class="bg-red-500 text-white px-2 py-1 rounded">삭제</button>
+              <button @click="deleteKeyword(keyword.id)" class="bg-red-500 text-white px-2 py-1 rounded">삭제</button>
             </td>
           </tr>
         </tbody>
@@ -35,7 +35,14 @@
   <script setup lang="ts">
   import { ref, onMounted } from 'vue'
   
-  const keywords = ref([])
+  interface Keyword {
+    id: number;
+    keyword: string;
+    active: number;
+    created_at: string;
+  }
+  
+  const keywords = ref<Keyword[]>([])
   
   onMounted(async () => {
     await loadKeywords()
@@ -43,30 +50,33 @@
   
   async function loadKeywords() {
     try {
-      const response = await fetch('/api/keywords')
-      keywords.value = await response.json()
+      const response = await $fetch<{
+        success: boolean;
+        data: Keyword[];
+      }>('/api/setting/keywords/keywords')
+      
+      if (response.success) {
+        keywords.value = response.data
+      }
     } catch (error) {
       console.error('API 호출 오류:', error)
     }
   }
   
-  function addKeyword() {
-    // 키워드 추가 로직 구현
-    console.log('키워드 추가')
-  }
-  
-  function toggleActive(keyword) {
+  function toggleActive(keyword: Keyword) {
     keyword.active = keyword.active === 1 ? 0 : 1
   }
   
   async function saveKeywords() {
     try {
       for (const keyword of keywords.value) {
-        await fetch('/api/keywords/update', {
+        const response = await $fetch('/api/setting/keywords/update', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(keyword)
+          body: keyword
         })
+        if (!response.success) {
+          throw new Error('키워드 업데이트 실패')
+        }
       }
       console.log('키워드 저장 완료')
     } catch (error) {
@@ -74,13 +84,37 @@
     }
   }
   
-  async function deleteKeyword(keyword) {
+  async function deleteKeyword(id: number) {
     if (confirm('정말 삭제하시겠습니까?')) {
       try {
-        await fetch(`/api/keywords/delete/${keyword}`, { method: 'DELETE' })
-        keywords.value = keywords.value.filter(k => k.keyword !== keyword)
+        const response = await $fetch(`/api/setting/keywords/delete/${id}`, { 
+          method: 'DELETE' 
+        })
+        if (response.success) {
+          keywords.value = keywords.value.filter(k => k.id !== id)
+        }
       } catch (error) {
         console.error('삭제 오류:', error)
+      }
+    }
+  }
+  
+  async function addKeyword() {
+    const keyword = prompt('추가할 키워드를 입력하세요:')
+    if (keyword) {
+      try {
+        const response = await $fetch<{
+          success: boolean;
+          data: Keyword;
+        }>('/api/setting/keywords/add', {
+          method: 'POST',
+          body: { keyword, active: 1 }
+        })
+        if (response.success) {
+          await loadKeywords()
+        }
+      } catch (error) {
+        console.error('키워드 추가 오류:', error)
       }
     }
   }

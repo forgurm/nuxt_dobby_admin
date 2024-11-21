@@ -1,4 +1,6 @@
 import { createPool } from 'mysql2/promise';
+import { defineEventHandler, createError } from 'h3';
+import type { RowDataPacket } from 'mysql2';
 
 const pool = createPool({
   host: process.env.DB_HOST,
@@ -9,11 +11,15 @@ const pool = createPool({
 
 export default defineEventHandler(async (event) => {
   try {
-    const [rows] = await pool.query(`
-      SELECT sector_category, symbol_code, symbol_name
-      FROM sector_info
+    const [rows] = await pool.query<RowDataPacket[]>(`
+      SELECT * FROM sector_info
     `);
-    return rows;
+
+    if (rows.length === 0) {
+      return { success: false, message: '섹터 목록이 없습니다.' };
+    }
+
+    return { success: true, data: rows };
   } catch (error) {
     console.error('데이터베이스 쿼리 오류:', error);
     throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' });

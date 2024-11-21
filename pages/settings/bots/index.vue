@@ -40,7 +40,16 @@
   <script setup lang="ts">
   import { ref, onMounted } from 'vue'
   
-  const bots = ref([])
+  interface Bot {
+    id: number;
+    name: string;
+    status: number;
+    location: string;
+    last_updated: string;
+    bot_id: string;
+  }
+  
+  const bots = ref<Bot[]>([])
   
   onMounted(async () => {
     await loadBots()
@@ -48,38 +57,51 @@
   
   async function loadBots() {
     try {
-      const response = await fetch('/api/bots')
-      bots.value = await response.json()
+      const response = await $fetch<{
+        success: boolean;
+        data: Bot[];
+      }>('/api/bots')
+      
+      if (response.success) {
+        bots.value = response.data
+      } else {
+        console.error('봇 데이터를 가져오는데 실패했습니다.')
+      }
     } catch (error) {
       console.error('API 호출 오류:', error)
     }
   }
   
-  async function saveBot(bot) {
+  async function saveBot(bot: Bot) {
     try {
-      await fetch(`/api/bots/${bot.bot_id}`, {
+      const response = await $fetch(`/api/setting/bots/${bot.bot_id}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bot)
+        body: bot
       })
-      console.log('봇 저장 완료')
+      if (response.success) {
+        console.log('봇 저장 완료')
+      }
     } catch (error) {
       console.error('봇 저장 오류:', error)
     }
   }
   
-  async function deleteBot(bot_id) {
+  async function deleteBot(bot_id: string) {
     if (confirm('정말 삭제하시겠습니까?')) {
       try {
-        await fetch(`/api/bots/${bot_id}`, { method: 'DELETE' })
-        bots.value = bots.value.filter(bot => bot.bot_id !== bot_id)
+        const response = await $fetch(`/api/setting/bots/${bot_id}`, { 
+          method: 'DELETE' 
+        })
+        if (response.success) {
+          bots.value = bots.value.filter(bot => bot.bot_id !== bot_id)
+        }
       } catch (error) {
         console.error('삭제 오류:', error)
       }
     }
   }
   
-  function statusEmoji(status) {
+  function statusEmoji(status: number): string {
     switch (status) {
       case 1:
         return '✅ 동작중'
@@ -92,7 +114,7 @@
     }
   }
   
-  function statusClass(status) {
+  function statusClass(status: number): string {
     switch (status) {
       case 1:
         return 'text-green-500'

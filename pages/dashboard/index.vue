@@ -8,7 +8,7 @@
       <!-- 활성화된 클라이언트 수 -->
       <div class="bg-white p-4 rounded-lg shadow-md">
         <h2 class="text-xl font-semibold mb-4">활성화된 클라이언트 수</h2>
-        <p class="text-2xl font-bold">{{ counts.active_client }}</p>
+        <p class="text-2xl font-bold">{{ stats?.activeClients }}</p>
       </div>
       
       <!-- 회원수 카드 -->
@@ -17,23 +17,23 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="bg-blue-100 p-3 rounded-lg text-center">
             <h3 class="text-lg font-medium text-blue-700">전체</h3>
-            <p class="text-2xl font-bold text-blue-900">{{ counts.total }}</p>
+            <p class="text-2xl font-bold text-blue-900">{{ stats?.members?.total }}</p>
           </div>
           <div class="bg-green-100 p-3 rounded-lg text-center">
             <h3 class="text-lg font-medium text-green-700">레퍼럴 사용자</h3>
-            <p class="text-2xl font-bold text-green-900">{{ counts.referral }}</p>
+            <p class="text-2xl font-bold text-green-900">{{ stats?.members?.inactive }}</p>
           </div>
           <div class="bg-yellow-100 p-3 rounded-lg text-center">
             <h3 class="text-lg font-medium text-yellow-700">미사용자</h3>
-            <p class="text-2xl font-bold text-yellow-900">{{ counts.inactive }}</p>
+            <p class="text-2xl font-bold text-yellow-900">{{ stats?.members?.inactive }}</p>
           </div>
           <div class="bg-purple-100 p-3 rounded-lg text-center">
             <h3 class="text-lg font-medium text-purple-700">영업</h3>
-            <p class="text-2xl font-bold text-purple-900">{{ counts.sales }}</p>
+            <p class="text-2xl font-bold text-purple-900">{{ stats?.members?.active }}</p>
           </div>
           <div class="bg-red-100 p-3 rounded-lg text-center">
             <h3 class="text-lg font-medium text-red-700">차단</h3>
-            <p class="text-2xl font-bold text-red-900">{{ counts.blocked }}</p>
+            <p class="text-2xl font-bold text-red-900">{{ stats?.members?.inactive }}</p>
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@
         <h2 class="text-xl font-semibold mb-4">레퍼럴 일자별 수익 차트</h2>
         <!-- 차트 컴포넌트 자리 -->
         <div class="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-          <span class="text-gray-500">차트 자리</span>
+          <span class="text-gray-500">차��� 자리</span>
         </div>
       </div>
       
@@ -60,130 +60,160 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { Chart } from 'chart.js'
-import type { ChartType, ChartData, ChartOptions } from 'chart.js'
-import { BarController, BarElement, CategoryScale, LinearScale, Title, Tooltip } from 'chart.js'
+import { ref, onMounted } from 'vue';
+import Chart from 'chart.js/auto';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-Chart.register(BarController, BarElement, CategoryScale, LinearScale, Title, Tooltip)
+Chart.register(ChartDataLabels);
 
-// 차트 캔버스 ref
-const chartRef = ref<HTMLCanvasElement | null>(null)
-let chart: Chart | null = null
-
-interface CountsData {
-  total: number
-  referral: number
-  inactive: number
-  sales: number
-  blocked: number
-  active_client: number
+interface DashboardStats {
+  activeClients: number;
+  members: {
+    total: number;
+    active: number;
+    inactive: number;
+  };
+  symbols: {
+    total: number;
+    empty: number;
+    exchanges: {
+      name: string;
+      count: number;
+      nullCount: number;
+    }[];
+  };
+  bots: {
+    total: number;
+    active: number;
+    inactive: number;
+  };
 }
 
-const counts = ref<CountsData>({
-  total: 0,
-  referral: 0,
-  inactive: 0,
-  sales: 0,
-  blocked: 0,
-  active_client: 0,
-})
+const stats = ref<DashboardStats | null>(null);
+const chartRef = ref<HTMLCanvasElement | null>(null);
+let symbolChart: Chart | null = null;
 
-interface SymbolData {
-  exchange_name: string;
-  symbol_name: string | null;
-}
+async function initializeChart() {
+  if (!chartRef.value || !stats.value?.symbols.exchanges) return;
 
-// 차트 생성 함수
-const createChart = (labels: string[], nullCounts: number[], totalCounts: number[]) => {
-  if (!chartRef.value) return
+  const exchanges = stats.value.symbols.exchanges;
   
-  // 기존 차트가 있다면 제거
-  if (chart) {
-    chart.destroy()
+  if (symbolChart) {
+    symbolChart.destroy();
   }
 
-  const ctx = chartRef.value.getContext('2d')
-  if (!ctx) return
-
-  chart = new Chart(ctx, {
-    type: 'bar' as ChartType,
+  symbolChart = new Chart(chartRef.value, {
+    type: 'bar',
     data: {
-      labels,
+      labels: exchanges.map(ex => ex.name),
       datasets: [
         {
-          label: 'Null Symbol Names',
-          data: nullCounts,
-          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+          label: '전체 심볼',
+          data: exchanges.map(ex => ex.count),
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+          barPercentage: 1.0,
+          categoryPercentage: 0.8
         },
         {
-          label: 'Total Symbols',
-          data: totalCounts,
-          backgroundColor: 'rgba(54, 162, 235, 0.5)',
-        },
-      ],
+          label: '미설정 심볼',
+          data: exchanges.map(ex => ex.nullCount),
+          backgroundColor: 'rgba(255, 99, 132, 0.8)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1,
+          barPercentage: 1.0,
+          categoryPercentage: 0.8
+        }
+      ]
     },
     options: {
       indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        title: {
-          display: true,
-          text: '거래소별 심볼 통계',
-        },
-      },
       scales: {
         x: {
-          stacked: true,
+          beginAtZero: true,
+          stacked: false,
+          title: {
+            display: true,
+            text: '심볼 수'
+          }
         },
         y: {
           stacked: true,
+          title: {
+            display: true,
+            text: '거래소'
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top'
+        },
+        title: {
+          display: true,
+          text: '거래소별 심볼 현황'
+        },
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            label: function(context) {
+              const label = context.dataset.label || '';
+              const value = context.parsed.x;
+              const total = exchanges[context.dataIndex].count;
+              if (label === '미설정 심볼') {
+                return `${label}`;
+              }
+              return `${label}: ${value}`;
+            }
+          }
+        },
+        datalabels: {
+          color: '#000',
+          font: {
+            weight: 'bold'
+          },
+          formatter: function(value, context) {
+            const total = exchanges[context.dataIndex].count;
+            if (context.dataset.label === '미설정 심볼') {
+              return `${value}`;
+            }
+            return value;
+          },
+          anchor: 'center',
+          align: 'center',
+          clamp: true,
+          clip: true,
+          display: function(context) {
+            return context.dataset.data[context.dataIndex] > 0;
+          }
         }
       }
-    },
-  })
+    }
+  });
 }
 
-// 데이터 로드 및 차트 초기화
-const initializeChart = async () => {
+async function fetchData() {
   try {
-    const response = await fetch('/api/symbols')
-    const data = await response.json() as SymbolData[]
-    const labels = [...new Set(data.map((item: SymbolData) => item.exchange_name))]
-    const nullCounts = labels.map(label => 
-      data.filter((item: SymbolData) => item.exchange_name === label && (!item.symbol_name || item.symbol_name === '')).length
-    )
-    const totalCounts = labels.map(label => 
-      data.filter((item: SymbolData) => item.exchange_name === label).length
-    )
-
-    createChart(labels, nullCounts, totalCounts)
+    const response = await $fetch<{
+      success: boolean;
+      data: DashboardStats;
+    }>('/api/dashboard/stats');
+    
+    if (response.success) {
+      stats.value = response.data;
+      await initializeChart();  // 데이터 로드 후 차트 초기화
+    }
   } catch (error) {
-    console.error('심볼 API 호출 오류:', error)
+    console.error('대시보드 통계 로딩 오류:', error);
   }
 }
 
-onMounted(async () => {
-  try {
-    const response = await fetch('/api/members/count')
-    const data = await response.json()
-    counts.value = data
-  } catch (error) {
-    console.error('API 호출 오류:', error)
-  }
-
-  // 차트 초기화는 별도 함수로 분리
-  await initializeChart()
-})
-
-// 컴포넌트가 제거될 때 차트 정리
-onBeforeUnmount(() => {
-  if (chart) {
-    chart.destroy()
-    chart = null
-  }
-})
+onMounted(() => {
+  fetchData();
+});
 </script>
 
 <style scoped>

@@ -15,15 +15,40 @@
       </div>
       
       <!-- 탭 메뉴 (데스크탑) -->
-      <div class="hidden md:flex space-x-4 mt-4">
-        <button
-          v-for="(category, index) in categories"
-          :key="category"
-          @click="activeTab = index"
-          :class="{'bg-blue-500 text-white': activeTab === index, 'bg-gray-200': activeTab !== index}"
-          class="px-4 py-2 rounded"
+      <div class="hidden md:flex items-center space-x-4 mt-4">
+        <!-- 왼쪽 버튼 -->
+        <button 
+          @click="scrollTabs('left')" 
+          class="bg-gray-200 p-2 rounded-full hover:bg-gray-300 focus:outline-none flex-shrink-0 self-stretch flex items-center"
         >
-          {{ category }}
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <!-- 탭 컨테이너 -->
+        <div ref="tabsContainer" class="flex-1 overflow-x-auto whitespace-nowrap pb-2 scroll-smooth" style="scrollbar-width: none;">
+          <div class="flex space-x-4">
+            <button
+              v-for="(category, index) in categories"
+              :key="category"
+              @click="activeTab = index"
+              :class="{'bg-blue-500 text-white': activeTab === index, 'bg-gray-200': activeTab !== index}"
+              class="px-4 py-2 rounded whitespace-nowrap flex-shrink-0 h-10"
+            >
+              {{ category }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 오른쪽 버튼 -->
+        <button 
+          @click="scrollTabs('right')" 
+          class="bg-gray-200 p-2 rounded-full hover:bg-gray-300 focus:outline-none flex-shrink-0 self-stretch flex items-center"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
         </button>
       </div>
   
@@ -54,51 +79,107 @@
   <script setup lang="ts">
   import { ref, onMounted } from 'vue'
   
-  const sectors = ref([])
-  const categories = ref([])
+  interface Sector {
+    id: number;
+    sector_category: string;
+    symbol_code: string;
+    symbol_name: string;
+    created_at: string;
+    updated_at: string;
+  }
+  
+  const sectors = ref<Sector[]>([])
+  const categories = ref<string[]>([])
   const activeTab = ref(0)
   const searchTerm = ref('')
+  const tabsContainer = ref<HTMLElement | null>(null)
   
   onMounted(async () => {
+    await loadSectors()
+  })
+  
+  async function loadSectors() {
     try {
-      const response = await fetch('/api/sectors')
-      const data = await response.json()
-      sectors.value = data
-      categories.value = [...new Set(data.map(item => item.sector_category))]
+      const response = await $fetch<{
+        success: boolean;
+        data: Sector[];
+      }>('/api/setting/sectors/sectors')
+      
+      if (response.success) {
+        sectors.value = response.data
+        categories.value = [...new Set(response.data.map(item => item.sector_category))]
+      }
     } catch (error) {
       console.error('API 호출 오류:', error)
     }
-  })
+  }
   
-  function filteredSectors(category) {
+  function filteredSectors(category: string) {
     return sectors.value.filter(symbol => 
       symbol.sector_category === category &&
-      (symbol.symbol_name.includes(searchTerm.value) || symbol.symbol_code.includes(searchTerm.value))
+      (symbol.symbol_name.toLowerCase().includes(searchTerm.value.toLowerCase()) || 
+       symbol.symbol_code.toLowerCase().includes(searchTerm.value.toLowerCase()))
     )
   }
   
-  function getCategories(symbolCode) {
-    const categories = sectors.value
+  function getCategories(symbolCode: string) {
+    const sectorCategories = sectors.value
       .filter(symbol => symbol.symbol_code === symbolCode)
       .map(symbol => symbol.sector_category)
-    return categories.join(', ')
+    return sectorCategories.join(', ')
   }
   
   function resetSearch() {
     searchTerm.value = ''
   }
   
-  function addCategory() {
+  async function addCategory() {
     // 카테고리 추가 로직 구현
     console.log('카테고리 추가')
   }
   
-  function addSector() {
+  async function addSector() {
     // 섹터 추가 로직 구현
     console.log('섹터 추가')
+  }
+  
+  function scrollTabs(direction: 'left' | 'right') {
+    if (!tabsContainer.value) return;
+    
+    const container = tabsContainer.value;
+    const scrollAmount = 200; // 스크롤 단위
+    
+    if (direction === 'left') {
+      container.scrollLeft -= scrollAmount;
+    } else {
+      container.scrollLeft += scrollAmount;
+    }
   }
   </script>
   
   <style scoped>
-  /* 추가 스타일링 */
+  /* 스크롤바 스타일링 */
+  .overflow-x-auto {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;     /* Firefox */
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari, Opera */
+  }
+  
+  /* 버튼 최소 너비 설정 */
+  button {
+    min-width: fit-content;
+  }
+  
+  /* 스크롤 부드럽게 */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+  
+  /* 네비게이션 버튼 호버 효과 */
+  button:hover {
+    transition: all 0.2s;
+  }
   </style>
