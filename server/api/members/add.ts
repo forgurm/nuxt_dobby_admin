@@ -1,6 +1,7 @@
 import { pool } from '../../db';
 import { defineEventHandler, readBody, createError } from 'h3';
 import type { RowDataPacket } from 'mysql2';
+import { v4 as uuidv4 } from 'uuid';
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
@@ -17,3 +18,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' });
   }
 }); 
+
+function generateUUID() {
+    return uuidv4();
+} 
