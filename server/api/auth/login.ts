@@ -1,34 +1,29 @@
 import { pool } from '../../db';
 import { defineEventHandler, readBody, createError } from 'h3';
-import type { RowDataPacket } from 'mysql2';
 
 export default defineEventHandler(async (event) => {
-  try {
-    const body = await readBody(event);
-    const [results] = await pool.query<RowDataPacket[]>(`
-      SELECT * FROM users WHERE emailid = ? AND password = ?
-    `, [body.id, body.password]);
+  const body = await readBody(event);
+  const { email, password } = body;
 
-    if (results.length > 0) {
-      return { 
-        success: true, 
-        message: '로그인 성공', 
-        user: { 
-          lv: results[0].lv,
-          emailid: results[0].emailid 
-        } 
-      };
+  // 입력된 데이터 확인
+  console.log('Login attempt with:', { email, password });
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM users WHERE emailid = ? AND password = ?',
+      [email, password]
+    );
+
+    // 쿼리 결과 확인
+    console.log('Query result:', rows);
+
+    if (rows.length > 0) {
+      return { success: true, user: rows[0] };
     } else {
-      return { 
-        success: false, 
-        message: '아이디 또는 비밀번호가 잘못되었습니다.' 
-      };
+      return { success: false, message: 'Invalid email or password' };
     }
   } catch (error) {
-    console.error('Login error:', error);
-    throw createError({
-      statusCode: 500,
-      message: 'Internal Server Error',
-    });
+    console.error('로그인 오류:', error);
+    throw createError({ statusCode: 500, statusMessage: 'Internal Server Error' });
   }
 }); 

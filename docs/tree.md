@@ -84,8 +84,6 @@
 │   │       └── symbols
 │   │           ├── symbols.ts
 │   │           └── update.ts
-│   ├── db
-│   │   └── bots.ts
 │   ├── db.ts
 │   └── tsconfig.json
 ├── tailwind.config.js
