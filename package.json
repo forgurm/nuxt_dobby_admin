@@ -1,7 +1,7 @@
 {
   "name": "nuxt-app",
   "private": true,
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "build": "nuxt build",
     "dev": "set NODE_NO_WARNINGS=1 && nuxt dev",
@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.12.2",
+    "@types/chart.js": "^2.9.41",
     "@types/crypto-js": "^4.2.2",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",

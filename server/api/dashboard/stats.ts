@@ -91,7 +91,7 @@ export default defineEventHandler(async (event) => {
       symbols: {
         total: symbolStats[0]?.total || 0,
         empty: symbolStats[0]?.empty_count || 0,
-        exchanges: exchangeStats.map(ex => ({
+        exchanges: exchangeStats.map((ex: RowDataPacket) => ({
           name: ex.name,
           count: ex.count,
           nullCount: ex.null_count
