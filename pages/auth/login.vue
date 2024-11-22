@@ -75,6 +75,8 @@ const handleLogin = async () => {
       errorMessage.value = response.message
     }
   } catch (error) {
+    console.log('emailid.value', emailid.value)
+    console.log('password.value', password.value)
     console.error('로그인 요청 오류:', error)
     errorMessage.value = '로그인 처리 중 오류가 발생했습니다.'
   }
