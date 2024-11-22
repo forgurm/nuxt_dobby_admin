@@ -1,18 +1,13 @@
-import { createPool } from 'mysql2/promise';
-
-const pool = createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+import { pool } from '../../db';
+import { defineEventHandler, createError } from 'h3';
+import type { RowDataPacket } from 'mysql2';
 
 export default defineEventHandler(async (event) => {
   const emailid = event.context.params.emailid;
 
   if (event.method === 'GET') {
     try {
-      const [rows] = await pool.query('SELECT * FROM users WHERE emailid = ?', [emailid]);
+      const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM users WHERE emailid = ?', [emailid]);
       if (rows.length === 0) {
         throw createError({ statusCode: 404, statusMessage: 'User not found' });
       }

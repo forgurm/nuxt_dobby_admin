@@ -1,15 +1,10 @@
-import { createPool } from 'mysql2/promise';
-
-const pool = createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+import { pool } from '../../db';
+import { defineEventHandler, createError } from 'h3';
+import type { RowDataPacket } from 'mysql2';
 
 export default defineEventHandler(async (event) => {
   try {
-    const [rows] = await pool.query(`
+    const [rows] = await pool.query<RowDataPacket[]>(`
       SELECT no AS id, name, emailid, referral_exchange AS exchange, referral_code, status, lv AS level
       FROM users
     `);
