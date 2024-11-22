@@ -9,8 +9,8 @@
           <div>
             <label for="id" class="block text-sm font-medium text-gray-700 mb-1">아이디</label>
             <input
-              id="id"
-              v-model="id"
+              id="emailid"
+              v-model="emailid"
               type="text"
               required
               class="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-const id = ref('')
+const emailid = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const router = useRouter()
@@ -60,7 +60,7 @@ const handleLogin = async () => {
     const response = await $fetch('/api/auth/login', {
       method: 'POST',
       body: { 
-        id: id.value, 
+        emailid: emailid.value, 
         password: password.value 
       }
     })

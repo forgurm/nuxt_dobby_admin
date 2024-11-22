@@ -3,15 +3,15 @@ import { defineEventHandler, readBody, createError } from 'h3';
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
-  const { email, password } = body;
+  const { emailid, password } = body;
 
   // 입력된 데이터 확인
-  console.log('Login attempt with:', { email, password });
+  console.log('Login attempt with:', { emailid, password });
 
   try {
     const [rows] = await pool.query(
       'SELECT * FROM users WHERE emailid = ? AND password = ?',
-      [email, password]
+      [emailid, password]
     );
 
     // 쿼리 결과 확인
