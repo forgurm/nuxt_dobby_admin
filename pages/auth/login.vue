@@ -75,6 +75,7 @@ const handleLogin = async () => {
       errorMessage.value = response.message
     }
   } catch (error) {
+    console.log('db server:', process.env.DB_HOST)
     console.log('emailid.value', emailid.value)
     console.log('password.value', password.value)
     console.error('로그인 요청 오류:', error)
