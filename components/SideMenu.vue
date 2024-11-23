@@ -78,14 +78,44 @@
         </NuxtLink>
       </li>
       <li v-if="userLevel === 9">
-        <NuxtLink 
-          to="/referrals" 
-          class="flex items-center p-3 rounded-lg hover:bg-gray-100"
-          :class="{ 'bg-gray-100': route.path === '/referrals' }"
-          @click="$emit('menuClick')"
-        >
-          <span>레퍼럴관리</span>
-        </NuxtLink>
+        <button @click="toggleReferrals" class="flex items-center justify-between w-full p-3 rounded-lg hover:bg-gray-100">
+          <span class="text-sm font-semibold text-gray-500">레퍼럴 관리</span>
+          <svg :class="{ 'transform rotate-180': isReferralsOpen }" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <ul v-if="isReferralsOpen" class="ml-4 space-y-2">
+          <li>
+            <NuxtLink 
+              to="/referrals/bybit" 
+              class="flex items-center p-3 rounded-lg hover:bg-gray-100"
+              :class="{ 'bg-gray-100': route.path === '/referrals/bybit' }"
+              @click="$emit('menuClick')"
+            >
+              <span>바이비트</span>
+            </NuxtLink>
+          </li>
+          <li>
+            <NuxtLink 
+              to="/referrals/bingx" 
+              class="flex items-center p-3 rounded-lg hover:bg-gray-100"
+              :class="{ 'bg-gray-100': route.path === '/referrals/bingx' }"
+              @click="$emit('menuClick')"
+            >
+              <span>빙엑스</span>
+            </NuxtLink>
+          </li>
+          <li>
+            <NuxtLink 
+              to="/referrals/bitget" 
+              class="flex items-center p-3 rounded-lg hover:bg-gray-100"
+              :class="{ 'bg-gray-100': route.path === '/referrals/bitget' }"
+              @click="$emit('menuClick')"
+            >
+              <span>비트겟</span>
+            </NuxtLink>
+          </li>
+        </ul>
       </li>
       <!-- 설정 관리 -->
       <li v-if="userLevel === 9">
@@ -189,6 +219,7 @@ const userLevel = useState('userLevel', () => 0)
 
 const isSettingsOpen = ref(false)
 const isBoardsOpen = ref(false)
+const isReferralsOpen = ref(false)
 
 const toggleSettings = () => {
   isSettingsOpen.value = !isSettingsOpen.value
@@ -196,6 +227,10 @@ const toggleSettings = () => {
 
 const toggleBoards = () => {
   isBoardsOpen.value = !isBoardsOpen.value
+}
+
+const toggleReferrals = () => {
+  isReferralsOpen.value = !isReferralsOpen.value
 }
 
 defineEmits(['menuClick'])
