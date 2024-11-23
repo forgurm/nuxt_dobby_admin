@@ -1,7 +1,15 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold mb-6">레퍼럴 관리</h1>
-    <!-- 레퍼럴 관리 내용 -->
+  <div class="h-full">
+    <h1 class="text-2xl font-bold mb-4">레퍼럴 관리</h1>
+    <div class="bg-white rounded-lg shadow h-[calc(100vh-10rem)]">
+      <iframe 
+        src="https://affiliates.bybit.com/v2/affiliate-portal/login"
+        class="w-full h-full rounded-lg"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
   </div>
 </template>
 
@@ -9,4 +17,10 @@
 definePageMeta({
   middleware: ['auth']
 })
-</script> 
+</script>
+
+<style scoped>
+iframe {
+  min-height: 800px;
+}
+</style> 

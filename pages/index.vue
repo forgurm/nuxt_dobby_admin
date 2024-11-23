@@ -1,9 +1,13 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center">
-    <p>리다이렉팅...</p>
+  <div>
+    <h1 class="text-2xl font-bold mb-4">대시보드</h1>
+    <div class="bg-white rounded-lg shadow p-6">
+      <!-- 대시보드 콘텐츠 -->
+      <p>환영합니다!</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// nuxt.config.ts에서 리다이렉션을 처리하므로 여기서는 추가 로직이 필요 없습니다
+// 페이지 로직
 </script> 

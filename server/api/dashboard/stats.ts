@@ -33,8 +33,7 @@ export default defineEventHandler(async (event) => {
     // 활성 클라이언트 수
     const [activeClientStats] = await connection.query<RowDataPacket[]>(
       'SHOW STATUS LIKE "Threads_connected"'
-    );
-    
+    ); 
 
     // 멤버 통계
     const [memberStats] = await connection.query<RowDataPacket[]>(`

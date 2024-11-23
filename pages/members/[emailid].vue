@@ -63,10 +63,9 @@ const message = ref('')
 onMounted(async () => {
   const memberId = route.params.emailid
   try {
-    console.log(memberId)
     const response = await fetch(`/api/members/${memberId}`)
     const data = await response.json()
-    console.log(data)
+    //console.log(data)
     member.value = data
   } catch (error) {
     console.error('회원 정보 불러오기 오류:', error)
@@ -81,7 +80,7 @@ function updateMember() {
   }
   
   // 회원 수정 로직 구현
-  console.log('회원 수정:', member.value)
+  //console.log('회원 수정:', member.value)
   // 예시: 서버에 PUT 요청 보내기
   // await fetch(`/api/members/${route.params.id}`, { method: 'PUT', body: JSON.stringify(member.value) })
   router.push('/members')

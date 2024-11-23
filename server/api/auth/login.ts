@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     );
 
     // 쿼리 결과 확인
-    console.log('Query result:', rows);
+    //console.log('Query result:', rows);
 
     if (rows.length > 0) {
       return { success: true, user: rows[0] };
